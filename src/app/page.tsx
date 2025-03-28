@@ -1,103 +1,213 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/Button';
+import { Input } from '@/components/Input';
+
+interface Link {
+  id: string;
+  url: string;
+  title: string;
+  description?: string;
+  tags: { name: string }[];
+  user: { name: string };
+  createdAt: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [links, setLinks] = useState<Link[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [newLink, setNewLink] = useState({
+    url: '',
+    title: '',
+    description: '',
+    tags: '',
+    isPublic: false,
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+      fetchLinks();
+    }
+
+    // Listen for login/logout events
+    const handleLoginStatus = () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+        fetchLinks();
+      } else {
+        setUser(null);
+        setLinks([]);
+      }
+    };
+
+    window.addEventListener('auth-status-change', handleLoginStatus);
+    return () => window.removeEventListener('auth-status-change', handleLoginStatus);
+  }, []);
+
+  async function fetchLinks() {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('/api/links', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Handle unauthorized access
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+          return;
+        }
+        throw new Error('Failed to fetch links');
+      }
+
+      const data = await response.json();
+      setLinks(data.links);
+    } catch (error) {
+      console.error('Error fetching links:', error);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      alert('Please login to create links');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...newLink,
+          tags: newLink.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        }),
+      });
+
+      if (response.ok) {
+        setNewLink({
+          url: '',
+          title: '',
+          description: '',
+          tags: '',
+          isPublic: false,
+        });
+        fetchLinks();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to create link');
+      }
+    } catch (error) {
+      console.error('Error creating link:', error);
+    }
+  }
+
+  if (!user) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="bg-white px-8 py-12 rounded-lg shadow-sm border border-gray-200 text-center">
+          <h1 className="text-3xl font-extrabold tracking-tight text-black mb-4">Welcome to Link Library</h1>
+          <p className="text-gray-600 mb-8">Your personal workspace for organizing and managing links</p>
+          <div className="flex justify-center gap-4">
+            <Button onClick={() => {
+              const header = document.querySelector('header');
+              if (header) {
+                header.dispatchEvent(new CustomEvent('show-login-modal', { bubbles: true }));
+              }
+            }}>
+              Login to Access Your Links
+            </Button>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+    );
+  }
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="bg-white px-8 py-6 rounded-lg shadow-sm border border-gray-200 mb-8">
+        <h1 className="text-3xl font-extrabold tracking-tight text-black">My Links</h1>
+      </div>
+      
+      <div className="mb-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">Add New Link</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="URL"
+            type="url"
+            required
+            value={newLink.url}
+            onChange={e => setNewLink({ ...newLink, url: e.target.value })}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <Input
+            label="Title"
+            required
+            value={newLink.title}
+            onChange={e => setNewLink({ ...newLink, title: e.target.value })}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+          <Input
+            label="Description"
+            value={newLink.description}
+            onChange={e => setNewLink({ ...newLink, description: e.target.value })}
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <Input
+            label="Tags (comma-separated)"
+            value={newLink.tags}
+            onChange={e => setNewLink({ ...newLink, tags: e.target.value })}
+          />
+          <Button type="submit">Add Link</Button>
+        </form>
+      </div>
+
+      {links.length === 0 ? (
+        <div className="text-center p-8 bg-white rounded-lg shadow-sm border border-gray-200">
+          <p className="text-gray-600">You haven't added any links yet</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {links.map(link => (
+            <div key={link.id} className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+              <h3 className="font-semibold mb-2">
+                <a href={link.url} target="_blank" rel="noopener noreferrer" 
+                   className="text-blue-700 hover:text-blue-800 hover:underline">
+                  {link.title}
+                </a>
+              </h3>
+              {link.description && (
+                <p className="text-gray-700 mb-2">{link.description}</p>
+              )}
+              <div className="flex flex-wrap gap-2 mb-2">
+                {link.tags.map(tag => (
+                  <span key={tag.name} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-sm border border-gray-200">
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </main>
   );
 }

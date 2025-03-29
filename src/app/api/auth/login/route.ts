@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const { email, password } = await req.json();
 
     console.log('Login attempt:', { email });
-
+    
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     }
 
     const token = await createToken({ userId: user.id });
-    
+
     return NextResponse.json({
       token,
       user: { id: user.id, email: user.email, name: user.name }

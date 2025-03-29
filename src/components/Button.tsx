@@ -13,8 +13,8 @@ export function Button({ variant = 'primary', className = '', ...props }: Button
 
   return (
     <button
-      {...props}
       className={`${baseStyles} ${variants[variant]} ${className}`}
+      {...props}
     />
   );
 }

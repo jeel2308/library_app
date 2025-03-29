@@ -100,3 +100,95 @@ export async function GET(req: Request) {
     );
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const { id, url, title, description, tags } = await req.json();
+
+    // Verify link ownership
+    const existingLink = await prisma.link.findFirst({
+      where: { id, userId: payload.userId },
+      include: { tags: true }
+    });
+
+    if (!existingLink) {
+      return NextResponse.json({ error: 'Link not found or unauthorized' }, { status: 404 });
+    }
+
+    // Update the link with optimized tag handling
+    const updatedLink = await prisma.link.update({
+      where: { id },
+      data: {
+        url,
+        title,
+        description,
+        tags: {
+          // First disconnect all existing tags
+          disconnect: existingLink.tags.map(tag => ({ name: tag.name })),
+          // Then connect or create new tags
+          connectOrCreate: tags.map((tag: string) => ({
+            where: { name: tag },
+            create: { name: tag }
+          }))
+        }
+      },
+      include: {
+        tags: true
+      }
+    });
+
+    return NextResponse.json({ link: updatedLink });
+  } catch (error) {
+    console.error('Error updating link:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Link ID is required' }, { status: 400 });
+    }
+
+    // Verify link ownership
+    const existingLink = await prisma.link.findFirst({
+      where: { id, userId: payload.userId },
+    });
+
+    if (!existingLink) {
+      return NextResponse.json({ error: 'Link not found or unauthorized' }, { status: 404 });
+    }
+
+    await prisma.link.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting link:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

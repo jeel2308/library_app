@@ -22,7 +22,7 @@ export async function createToken(payload: { userId: string }): Promise<string> 
 export async function verifyToken(token: string): Promise<{ userId: string } | null> {
   try {
     return jwt.verify(token, JWT_SECRET) as { userId: string };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

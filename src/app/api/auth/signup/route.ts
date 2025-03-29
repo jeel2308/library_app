@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '@/lib/auth';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
     const { email, password, name } = await req.json();
+
+    console.log('Signup attempt:', { email, name });
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
+      console.error('Email already exists:', { email });
       return NextResponse.json(
         { error: 'Email already exists' },
         { status: 400 }
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
       user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {
+    console.error('Internal server error in signup route:', error, 'DATABASE_URL:', process.env.DATABASE_URL);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -161,8 +161,14 @@ export function Header() {
       const data = await res.json();
 
       if (res.ok) {
+        // Store the token in localStorage
+        localStorage.setItem('token', data.token);
+        // Update the user state
+        setUser(data.user);
         setIsSignupModalOpen(false);
-        // Handle successful signup
+        // Reset the form
+        setAuthForm({ email: '', password: '', name: '' });
+        setFormErrors({});
       } else {
         setFormErrors(prev => ({ ...prev, email: data.error }));
       }
@@ -211,7 +217,7 @@ export function Header() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Login</h2>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4" noValidate>
               <Input
                 label="Email"
                 type="email"
@@ -245,7 +251,7 @@ export function Header() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Sign Up</h2>
-            <form onSubmit={handleSignup} className="space-y-4">
+            <form onSubmit={handleSignup} className="space-y-4" noValidate>
               <Input
                 label="Name"
                 required

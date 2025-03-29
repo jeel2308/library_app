@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, createToken } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
     const { email, password, name } = await req.json();
-
     console.log('Signup attempt:', { email, name });
 
     const existingUser = await prisma.user.findUnique({
@@ -29,7 +28,11 @@ export async function POST(req: Request) {
       },
     });
 
+    // Generate token for automatic login
+    const token = await createToken({ userId: user.id });
+
     return NextResponse.json({ 
+      token,
       user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {

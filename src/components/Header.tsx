@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { Input } from './Input';
+import { Loader } from './Loader';
 
 export function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -13,6 +14,7 @@ export function Header() {
     password: '',
     name: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -31,6 +33,7 @@ export function Header() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -50,11 +53,14 @@ export function Header() {
       }
     } catch (error) {
       console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -71,6 +77,8 @@ export function Header() {
       }
     } catch (error) {
       console.error('Signup error:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -83,6 +91,7 @@ export function Header() {
 
   return (
     <>
+      {isLoading && <Loader />}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-900">Link Library</h1>

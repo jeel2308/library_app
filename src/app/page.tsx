@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { Loader } from '@/components/Loader';
 
 interface Link {
   id: string;
@@ -30,6 +31,7 @@ export default function Home() {
     tags: '',
     isPublic: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -38,7 +40,6 @@ export default function Home() {
       fetchLinks();
     }
 
-    // Listen for login/logout events
     const handleLoginStatus = () => {
       const userData = localStorage.getItem('user');
       if (userData) {
@@ -55,6 +56,7 @@ export default function Home() {
   }, []);
 
   async function fetchLinks() {
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -67,7 +69,6 @@ export default function Home() {
       
       if (!response.ok) {
         if (response.status === 401) {
-          // Handle unauthorized access
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setUser(null);
@@ -80,15 +81,19 @@ export default function Home() {
       setLinks(data.links);
     } catch (error) {
       console.error('Error fetching links:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setIsLoading(true);
     const token = localStorage.getItem('token');
     
     if (!token) {
       alert('Please login to create links');
+      setIsLoading(false);
       return;
     }
 
@@ -120,32 +125,14 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error creating link:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }
-
-  if (!user) {
-    return (
-      <main className="container mx-auto px-4 py-8">
-        <div className="bg-white px-8 py-12 rounded-lg shadow-sm border border-gray-200 text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight text-black mb-4">Welcome to Link Library</h1>
-          <p className="text-gray-600 mb-8">Your personal workspace for organizing and managing links</p>
-          <div className="flex justify-center gap-4">
-            <Button onClick={() => {
-              const header = document.querySelector('header');
-              if (header) {
-                header.dispatchEvent(new CustomEvent('show-login-modal', { bubbles: true }));
-              }
-            }}>
-              Login to Access Your Links
-            </Button>
-          </div>
-        </div>
-      </main>
-    );
   }
 
   return (
     <main className="container mx-auto px-4 py-8">
+      {isLoading && <Loader />}
       <div className="bg-white px-8 py-6 rounded-lg shadow-sm border border-gray-200 mb-8">
         <h1 className="text-3xl font-extrabold tracking-tight text-black">My Links</h1>
       </div>

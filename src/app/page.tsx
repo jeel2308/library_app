@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
+import { Form, Field } from '@/components/Form';
 import { Loader } from '@/components/Loader';
 
 interface Link {
@@ -140,25 +141,6 @@ export default function Home() {
       return;
     }
 
-    // Validate required fields
-    if (!newLink.url.trim()) {
-      alert('URL is required');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!newLink.title.trim()) {
-      alert('Title is required');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!newLink.tags.trim()) {
-      alert('At least one tag is required');
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const response = await fetch('/api/links', {
         method: 'POST',
@@ -188,7 +170,6 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Failed to create link',error);
-      // Error state is already being handled in the UI
     } finally {
       setIsLoading(false);
     }
@@ -292,6 +273,45 @@ export default function Home() {
     });
     return acc;
   }, {} as Record<string, number>);
+
+  const addLinkFields: Field[] = [
+    { 
+      name: 'url', 
+      label: 'URL', 
+      type: 'url', 
+      required: true, 
+      value: newLink.url,
+      validation: {
+        pattern: /^https?:\/\/.+/,
+        message: 'Please enter a valid URL starting with http:// or https://'
+      }
+    },
+    { 
+      name: 'title', 
+      label: 'Title', 
+      required: true, 
+      value: newLink.title 
+    },
+    { 
+      name: 'description', 
+      label: 'Description', 
+      value: newLink.description 
+    },
+    { 
+      name: 'tags', 
+      label: 'Tags (comma-separated)', 
+      required: true, 
+      value: newLink.tags,
+      validation: {
+        pattern: /^[\w\s]+(,[\w\s]+)*$/,
+        message: 'Please enter tags separated by commas'
+      }
+    },
+  ];
+
+  const handleAddLinkChange = (field: string, value: string) => {
+    setNewLink(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
     <div className="flex h-[calc(100vh-64px)]">
@@ -427,107 +447,62 @@ export default function Home() {
 
       {/* Add Link Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Add New Link</h2>
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-            <form onSubmit={(e) => {
-              handleSubmit(e);
-              setIsAddModalOpen(false);
-            }} className="space-y-4">
-              <Input
-                label="URL"
-                type="url"
-                required
-                value={newLink.url}
-                onChange={e => setNewLink({ ...newLink, url: e.target.value })}
-              />
-              <Input
-                label="Title"
-                required
-                value={newLink.title}
-                onChange={e => setNewLink({ ...newLink, title: e.target.value })}
-              />
-              <Input
-                label="Description"
-                value={newLink.description}
-                onChange={e => setNewLink({ ...newLink, description: e.target.value })}
-              />
-              <Input
-                label="Tags (comma-separated)"
-                value={newLink.tags}
-                onChange={e => setNewLink({ ...newLink, tags: e.target.value })}
-              />
-              <div className="flex justify-end space-x-4">
-                <Button variant="secondary" onClick={() => setIsAddModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Add Link</Button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Form
+          title="Add New Link"
+          fields={addLinkFields}
+          onSubmit={handleSubmit}
+          onCancel={() => setIsAddModalOpen(false)}
+          onChange={handleAddLinkChange}
+          isLoading={isLoading}
+          submitText="Add Link"
+        />
       )}
 
-      {/* Edit Link Modal */}
       {editingLink && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Edit Link</h2>
-              <button
-                onClick={() => setEditingLink(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-            <form onSubmit={handleUpdate} className="space-y-4">
-              <Input
-                label="URL"
-                type="url"
-                required
-                value={editingLink.url}
-                onChange={e => setEditingLink({ ...editingLink, url: e.target.value })}
-              />
-              <Input
-                label="Title"
-                required
-                value={editingLink.title}
-                onChange={e => setEditingLink({ ...editingLink, title: e.target.value })}
-              />
-              <Input
-                label="Description"
-                value={editingLink.description || ''}
-                onChange={e => setEditingLink({ ...editingLink, description: e.target.value })}
-              />
-              <Input
-                label="Tags (comma-separated)"
-                value={typeof editingLink.tags === 'string' ? editingLink.tags : editingLink.tags.map(t => t.name).join(', ')}
-                onChange={e => setEditingLink({ 
-                  ...editingLink, 
-                  tags: e.target.value 
-                })}
-              />
-              <div className="flex justify-end space-x-4">
-                <Button variant="secondary" onClick={() => setEditingLink(null)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Save Changes</Button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Form
+          title="Edit Link"
+          fields={[
+            { 
+              name: 'url', 
+              label: 'URL', 
+              type: 'url', 
+              required: true, 
+              value: editingLink.url,
+              validation: {
+                pattern: /^https?:\/\/.+/,
+                message: 'Please enter a valid URL starting with http:// or https://'
+              }
+            },
+            { 
+              name: 'title', 
+              label: 'Title', 
+              required: true, 
+              value: editingLink.title 
+            },
+            { 
+              name: 'description', 
+              label: 'Description', 
+              value: editingLink.description || '' 
+            },
+            { 
+              name: 'tags', 
+              label: 'Tags (comma-separated)', 
+              required: true, 
+              value: typeof editingLink.tags === 'string' ? editingLink.tags : editingLink.tags.map(t => t.name).join(', '),
+              validation: {
+                pattern: /^[\w\s]+(,[\w\s]+)*$/,
+                message: 'Please enter tags separated by commas'
+              }
+            },
+          ]}
+          onSubmit={handleUpdate}
+          onCancel={() => setEditingLink(null)}
+          onChange={(field, value) => setEditingLink({ ...editingLink, [field]: value })}
+          isLoading={isLoading}
+          submitText="Save Changes"
+        />
       )}
 
-      {/* Delete Confirmation Modal */}
       {deletingLinkId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">

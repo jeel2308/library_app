@@ -5,6 +5,8 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Form, Field } from '@/components/Form';
 import { Loader } from '@/components/Loader';
+import * as Tooltip from '@radix-ui/react-tooltip';
+import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 interface Link {
   id: string;
@@ -377,9 +379,21 @@ export default function Home() {
                 placeholder="Search links..."
                 className="w-64"
               />
-              <Button onClick={() => setIsAddModalOpen(true)}>
-                Add Link
-              </Button>
+              <Tooltip.Provider>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <Button onClick={() => setIsAddModalOpen(true)}>
+                      <PlusIcon className="h-5 w-5" />
+                    </Button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content className="tooltip-content" sideOffset={5}>
+                      Add Link
+                      <Tooltip.Arrow className="fill-gray-800" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+              </Tooltip.Provider>
             </div>
           </div>
         </div>
@@ -406,18 +420,41 @@ export default function Home() {
                       </a>
                     </h3>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditingLink(link)}
-                        className="text-gray-600 hover:text-gray-800"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => setDeletingLinkId(link.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        Delete
-                      </button>
+                      <Tooltip.Provider>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger asChild>
+                            <button
+                              onClick={() => setEditingLink(link)}
+                              className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100"
+                            >
+                              <PencilSquareIcon className="h-4 w-4" />
+                            </button>
+                          </Tooltip.Trigger>
+                          <Tooltip.Portal>
+                            <Tooltip.Content className="tooltip-content" sideOffset={5}>
+                              Edit Link
+                              <Tooltip.Arrow className="fill-gray-800" />
+                            </Tooltip.Content>
+                          </Tooltip.Portal>
+                        </Tooltip.Root>
+
+                        <Tooltip.Root>
+                          <Tooltip.Trigger asChild>
+                            <button
+                              onClick={() => setDeletingLinkId(link.id)}
+                              className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </Tooltip.Trigger>
+                          <Tooltip.Portal>
+                            <Tooltip.Content className="tooltip-content" sideOffset={5}>
+                              Delete Link
+                              <Tooltip.Arrow className="fill-gray-800" />
+                            </Tooltip.Content>
+                          </Tooltip.Portal>
+                        </Tooltip.Root>
+                      </Tooltip.Provider>
                     </div>
                   </div>
                   {link.description && (

@@ -141,7 +141,7 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm border-b border-gray-200">
         <nav className="h-16 px-6 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">Link Library</h1>
           <div className="flex items-center gap-4">

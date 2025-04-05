@@ -16,13 +16,7 @@ function createPrismaClient() {
 
   // Add development-specific error handling
   if (process.env.NODE_ENV !== 'production') {
-    client.$on('query', (e: any) => {
-      console.log('Query:', e)
-    })
-
-    client.$on('error', (e: any) => {
-      console.error('Prisma Error:', e)
-    })
+    // Removed unsupported event listeners for 'query' and 'error' to fix TypeScript errors
   }
 
   return client

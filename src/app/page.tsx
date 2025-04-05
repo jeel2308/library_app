@@ -7,6 +7,9 @@ import { Form, Field } from '@/components/Form';
 import { Loader } from '@/components/Loader';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { Sidebar } from '@/components/Sidebar';
+import { LinkCard } from '@/components/LinkCard';
 
 interface Link {
   id: string;
@@ -16,6 +19,9 @@ interface Link {
   tags: { name: string }[];
   user: { name: string };
   createdAt: string;
+  image?: string;
+  favicon?: string;
+  siteName?: string;
 }
 
 interface User {
@@ -318,38 +324,12 @@ export default function Home() {
   return (
     <div className="flex h-[calc(100vh-64px)]">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 p-4 flex-shrink-0 overflow-y-auto">
-        <nav>
-          <div className="space-y-1">
-            <button
-              onClick={() => setSelectedTag('')}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium ${
-                !selectedTag
-                  ? 'bg-blue-100 text-blue-900'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              All Links
-              <span className="ml-2 text-gray-500">({links.length})</span>
-            </button>
-            
-            {uniqueTags.map(tag => (
-              <button
-                key={tag}
-                onClick={() => setSelectedTag(tag)}
-                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium ${
-                  selectedTag === tag
-                    ? 'bg-blue-100 text-blue-900'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {tag}
-                <span className="ml-2 text-gray-500">({tagCounts[tag] || 0})</span>
-              </button>
-            ))}
-          </div>
-        </nav>
-      </aside>
+      <Sidebar
+        tags={uniqueTags}
+        selectedTag={selectedTag}
+        tagCounts={tagCounts}
+        onSelectTag={setSelectedTag}
+      />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto bg-gray-50">
@@ -358,7 +338,7 @@ export default function Home() {
             <Loader />
           </div>
         )}
-        
+
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0">
           <div className="flex justify-between items-center">
@@ -370,7 +350,7 @@ export default function Home() {
                 {filteredLinks.length} {filteredLinks.length === 1 ? 'link' : 'links'}
               </p>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <Input
                 type="search"
@@ -409,72 +389,14 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="flex flex-col gap-4 items-start"> {/* Changed alignment to left */}
               {filteredLinks.map(link => (
-                <div key={link.id} className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold">
-                      <a href={link.url} target="_blank" rel="noopener noreferrer" 
-                         className="text-blue-700 hover:text-blue-800 hover:underline">
-                        {link.title}
-                      </a>
-                    </h3>
-                    <div className="flex gap-2">
-                      <Tooltip.Provider>
-                        <Tooltip.Root>
-                          <Tooltip.Trigger asChild>
-                            <button
-                              onClick={() => setEditingLink(link)}
-                              className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100"
-                            >
-                              <PencilSquareIcon className="h-4 w-4" />
-                            </button>
-                          </Tooltip.Trigger>
-                          <Tooltip.Portal>
-                            <Tooltip.Content className="tooltip-content" sideOffset={5}>
-                              Edit Link
-                              <Tooltip.Arrow className="fill-gray-800" />
-                            </Tooltip.Content>
-                          </Tooltip.Portal>
-                        </Tooltip.Root>
-
-                        <Tooltip.Root>
-                          <Tooltip.Trigger asChild>
-                            <button
-                              onClick={() => setDeletingLinkId(link.id)}
-                              className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </button>
-                          </Tooltip.Trigger>
-                          <Tooltip.Portal>
-                            <Tooltip.Content className="tooltip-content" sideOffset={5}>
-                              Delete Link
-                              <Tooltip.Arrow className="fill-gray-800" />
-                            </Tooltip.Content>
-                          </Tooltip.Portal>
-                        </Tooltip.Root>
-                      </Tooltip.Provider>
-                    </div>
-                  </div>
-                  {link.description && (
-                    <p className="text-gray-700 mb-2">{link.description}</p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {link.tags.map(tag => (
-                      <button
-                        key={tag.name}
-                        onClick={() => setSelectedTag(tag.name)}
-                        className={`px-2 py-1 rounded-full text-sm border ${
-                          selectedTag === tag.name
-                            ? 'bg-blue-100 text-blue-800 border-blue-300'
-                            : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
-                        }`}
-                      >
-                        {tag.name}
-                      </button>
-                    ))}
-                  </div>
+                <div key={link.id} className="w-full max-w-md"> {/* Added key to the wrapping div */}
+                  <LinkCard
+                    link={link}
+                    onEdit={setEditingLink as any}
+                    onDelete={setDeletingLinkId}
+                  />
                 </div>
               ))}
             </div>

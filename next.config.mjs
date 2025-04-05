@@ -5,8 +5,21 @@ const nextConfig = {
       bodySizeLimit: '2mb'
     }
   },
-  webpack: (config) => {
-    config.externals = [...(config.externals || []), "bcryptjs"];
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**', // Allow images from any hostname
+      },
+    ],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Ignore the re2 module only on the server side
+      config.externals = config.externals || [];
+      config.externals.push({ re2: 'commonjs re2' });
+    }
+
     return config;
   },
   eslint: {

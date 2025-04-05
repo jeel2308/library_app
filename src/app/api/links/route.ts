@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { scrapeMetadata } from '@/lib/scraper';
 
 export async function POST(req: Request) {
   try {
@@ -18,13 +19,19 @@ export async function POST(req: Request) {
 
     const { url, title, description, tags } = await req.json();
 
+    // Scrape metadata for the provided URL
+    const metadata = await scrapeMetadata(url);
+
     console.log('Creating link:', { url, title, description, tags, userId: payload.userId });
 
     const link = await prisma.link.create({
       data: {
         url,
-        title,
-        description,
+        title: title || metadata.title,
+        description: description || metadata.description,
+        image: metadata.image as string | null, // Ensure compatibility with Prisma's expected types
+        siteName: metadata.siteName,
+        favicon: metadata.favicon,
         isPublic: false,
         userId: payload.userId,
         tags: {

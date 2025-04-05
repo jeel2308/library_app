@@ -340,7 +340,7 @@ export default function Home() {
         )}
 
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0">
+        <div className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-50">
           <div className="flex justify-between items-center">
             <div className="flex-1">
               <h1 className="text-2xl font-semibold text-gray-900">

@@ -24,7 +24,7 @@ export function LinkCard({ link, onEdit, onDelete }: LinkCardProps) {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
       {/* Link Preview Image */}
       <a href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-        <div className="relative w-full h-48 bg-gray-100">
+        <div className="relative w-full h-48 bg-gray-100 z-10"> {/* Added z-index to ensure image stays below header */}
           <Image
             src={link.image || '/public/placeholder.png'}
             alt={link.title || 'Link preview'}

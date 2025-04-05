@@ -321,6 +321,99 @@ export default function Home() {
     setNewLink(prev => ({ ...prev, [field]: value }));
   };
 
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        {/* Hero Section */}
+        <div className="text-center max-w-2xl">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to Link Library
+          </h1>
+          <p className="text-lg text-gray-600 mb-6">
+            Save, organize, and share your favorite links effortlessly. Join us today and take control of your online resources.
+          </p>
+          <div className="flex justify-center gap-4">
+            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">
+              Sign Up
+            </button>
+            <button className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg shadow hover:bg-gray-300">
+              Learn More
+            </button>
+          </div>
+        </div>
+
+        {/* Illustration */}
+        <div className="mt-12">
+          <Image
+            src="/undraw_file-search_cbur.svg" // Corrected the path to the SVG file
+            alt="Hero Illustration"
+            width={400}
+            height={400}
+          />
+        </div>
+
+        {/* Features Section */}
+        <div className="mt-16 px-8 w-full max-w-5xl">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            Why Choose Link Library?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="flex flex-col items-center text-center">
+              <Image
+                src="/public/globe.svg"
+                alt="Organize Links"
+                width={80}
+                height={80}
+                className="mb-4"
+              />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Organize Your Links
+              </h3>
+              <p className="text-gray-600">
+                Keep all your favorite links in one place and access them anytime, anywhere.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="flex flex-col items-center text-center">
+              <Image
+                src="/public/placeholder.png"
+                alt="Share Effortlessly"
+                width={80}
+                height={80}
+                className="mb-4"
+              />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Share Effortlessly
+              </h3>
+              <p className="text-gray-600">
+                Share your collections with friends, family, or colleagues with just a click.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="flex flex-col items-center text-center">
+              <Image
+                src="/public/window.svg"
+                alt="Stay Organized"
+                width={80}
+                height={80}
+                className="mb-4"
+              />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Stay Organized
+              </h3>
+              <p className="text-gray-600">
+                Use tags and categories to keep your links neatly organized and easy to find.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100vh-64px)]">
       {/* Sidebar */}

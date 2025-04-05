@@ -360,13 +360,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
             <div className="flex flex-col items-center text-center">
-              <Image
-                src="/public/globe.svg"
-                alt="Organize Links"
-                width={80}
-                height={80}
-                className="mb-4"
-              />
+              
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 Organize Your Links
               </h3>
@@ -377,13 +371,7 @@ export default function Home() {
 
             {/* Feature 2 */}
             <div className="flex flex-col items-center text-center">
-              <Image
-                src="/public/placeholder.png"
-                alt="Share Effortlessly"
-                width={80}
-                height={80}
-                className="mb-4"
-              />
+              
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 Share Effortlessly
               </h3>
@@ -394,13 +382,7 @@ export default function Home() {
 
             {/* Feature 3 */}
             <div className="flex flex-col items-center text-center">
-              <Image
-                src="/public/window.svg"
-                alt="Stay Organized"
-                width={80}
-                height={80}
-                className="mb-4"
-              />
+              
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 Stay Organized
               </h3>

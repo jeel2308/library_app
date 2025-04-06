@@ -37,7 +37,6 @@ interface EditingLink extends Omit<Link, 'tags'> {
 export default function Home() {
   const [links, setLinks] = useState<Link[]>([]);
   const [filteredLinks, setFilteredLinks] = useState<Link[]>([]);
-  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
@@ -51,8 +50,21 @@ export default function Home() {
     isPublic: false,
   });
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+  const [loginFormData, setLoginFormData] = useState({ email: '', password: '' });
+  const [signUpFormData, setSignUpFormData] = useState({ name: '', email: '', password: '' });
 
-  // Effect for auth status
+  const handleLoginChange = (field: string, value: string) => {
+    setLoginFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSignUpChange = (field: string, value: string) => {
+    setSignUpFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
@@ -144,7 +156,6 @@ export default function Home() {
     const token = localStorage.getItem('token');
     
     if (!token) {
-      alert('Please login to create links');
       setIsLoading(false);
       return;
     }
@@ -174,7 +185,6 @@ export default function Home() {
         fetchLinks();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to create link');
       }
     } catch (error) {
       console.error('Failed to create link',error);
@@ -192,19 +202,16 @@ export default function Home() {
 
     // Validate required fields
     if (!editingLink.url.trim()) {
-      alert('URL is required');
       setIsLoading(false);
       return;
     }
 
     if (!editingLink.title.trim()) {
-      alert('Title is required');
       setIsLoading(false);
       return;
     }
 
     if (typeof editingLink.tags === 'string' && !editingLink.tags.trim()) {
-      alert('At least one tag is required');
       setIsLoading(false);
       return;
     }
@@ -232,7 +239,6 @@ export default function Home() {
         fetchLinks();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to update link');
       }
     } catch (error) {
       console.error('Error updating link:', error);
@@ -258,7 +264,6 @@ export default function Home() {
         fetchLinks();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to delete link');
       }
     } catch (error) {
       console.error('Failed to delete link',error);
@@ -323,44 +328,40 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
         {/* Hero Section */}
         <div className="text-center max-w-2xl">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to Link Library
+          <h1 className="text-5xl font-extrabold text-gray-900 mb-6">
+            Welcome to <span className="text-blue-600">Link Library</span>
           </h1>
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="text-lg text-gray-700 mb-8">
             Save, organize, and share your favorite links effortlessly. Join us today and take control of your online resources.
           </p>
           <div className="flex justify-center gap-4">
-            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">
+            <button
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition"
+              onClick={() => setIsSignUpModalOpen(true)}
+            >
               Sign Up
             </button>
-            <button className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg shadow hover:bg-gray-300">
-              Learn More
+            <button
+              className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg shadow-lg hover:bg-gray-300 transition"
+              onClick={() => setIsLoginModalOpen(true)}
+            >
+              Sign In
             </button>
           </div>
         </div>
 
-        {/* Illustration */}
-        <div className="mt-12">
-          <Image
-            src="/undraw_file-search_cbur.svg" // Corrected the path to the SVG file
-            alt="Hero Illustration"
-            width={400}
-            height={400}
-          />
-        </div>
-
         {/* Features Section */}
         <div className="mt-16 px-8 w-full max-w-5xl">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            Why Choose Link Library?
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Why Choose <span className="text-blue-600">Link Library</span>?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Feature 1 */}
-            <div className="flex flex-col items-center text-center">
-              
+            <div className="flex flex-col items-center text-center bg-white p-6 rounded-lg shadow-md">
+              <img src="/undraw_online-organizer_1kdy.svg" alt="Organize Links" className="h-12 w-12 mb-4" />
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 Organize Your Links
               </h3>
@@ -370,19 +371,8 @@ export default function Home() {
             </div>
 
             {/* Feature 2 */}
-            <div className="flex flex-col items-center text-center">
-              
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Share Effortlessly
-              </h3>
-              <p className="text-gray-600">
-                Share your collections with friends, family, or colleagues with just a click.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="flex flex-col items-center text-center">
-              
+            <div className="flex flex-col items-center text-center bg-white p-6 rounded-lg shadow-md">
+              <img src="/undraw_task-list_qe3p.svg" alt="Stay Organized" className="h-12 w-12 mb-4" />
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 Stay Organized
               </h3>
@@ -392,6 +382,77 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Login Modal */}
+        {isLoginModalOpen && (
+          <Form
+            title="Sign In"
+            fields={[
+              { name: 'email', label: 'Email', type: 'email', required: true, value: loginFormData.email },
+              { name: 'password', label: 'Password', type: 'password', required: true, value: loginFormData.password },
+            ]}
+            onSubmit={async () => {
+              try {
+                const response = await fetch('/api/auth/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(loginFormData),
+                });
+
+                if (!response.ok) {
+                  const error = await response.json();
+                  return;
+                }
+
+                const result = await response.json();
+                localStorage.setItem('token', result.token);
+                localStorage.setItem('user', JSON.stringify(result.user));
+                window.dispatchEvent(new Event('auth-status-change'));
+                setIsLoginModalOpen(false);
+              } catch (error) {
+                console.error('Error during login:', error);
+              }
+            }}
+            onCancel={() => setIsLoginModalOpen(false)}
+            onChange={handleLoginChange}
+          />
+        )}
+
+        {/* Sign-Up Modal */}
+        {isSignUpModalOpen && (
+          <Form
+            title="Sign Up"
+            fields={[
+              { name: 'name', label: 'Name', type: 'text', required: true, value: signUpFormData.name },
+              { name: 'email', label: 'Email', type: 'email', required: true, value: signUpFormData.email },
+              { name: 'password', label: 'Password', type: 'password', required: true, value: signUpFormData.password },
+            ]}
+            onSubmit={async () => {
+              try {
+                const response = await fetch('/api/auth/signup', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(signUpFormData),
+                });
+
+                if (!response.ok) {
+                  const error = await response.json();
+                  return;
+                }
+
+                const result = await response.json();
+                localStorage.setItem('token', result.token);
+                localStorage.setItem('user', JSON.stringify(result.user));
+                window.dispatchEvent(new Event('auth-status-change'));
+                setIsSignUpModalOpen(false);
+              } catch (error) {
+                console.error('Error during sign up:', error);
+              }
+            }}
+            onCancel={() => setIsSignUpModalOpen(false)}
+            onChange={handleSignUpChange}
+          />
+        )}
       </div>
     );
   }

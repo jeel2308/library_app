@@ -36,6 +36,16 @@ export function Header() {
     return () => document.removeEventListener('show-login-modal', handleShowLogin);
   }, []);
 
+  useEffect(() => {
+    const handleAuthStatusChange = () => {
+      const userData = localStorage.getItem('user');
+      setUser(userData ? JSON.parse(userData) : null);
+    };
+
+    window.addEventListener('auth-status-change', handleAuthStatusChange);
+    return () => window.removeEventListener('auth-status-change', handleAuthStatusChange);
+  }, []);
+
   const handleFieldChange = (field: string, value: string) => {
     setAuthForm(prev => ({ ...prev, [field]: value }));
     // Clear API errors when user starts typing

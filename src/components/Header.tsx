@@ -165,7 +165,7 @@ export function Header() {
             ) : (
               <>
                 <Button variant="secondary" onClick={() => setIsLoginModalOpen(true)}>
-                  Login
+                  Sign In
                 </Button>
                 <Button onClick={() => setIsSignupModalOpen(true)}>
                   Sign Up
@@ -178,14 +178,14 @@ export function Header() {
 
       {isLoginModalOpen && (
         <Form
-          title="Login"
+          title="Sign In"
           fields={loginFields}
           onSubmit={handleLogin}
           onCancel={() => setIsLoginModalOpen(false)}
           onChange={handleFieldChange}
           errors={formErrors}
           isLoading={isLoading}
-          submitText="Login"
+          submitText="Sign In"
         />
       )}
 

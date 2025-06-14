@@ -10,7 +10,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**', // Allow images from any hostname
-      },
+      },{
+        protocol: 'http',
+        hostname: '**', // Allow images from any hostname
+      }
     ],
   },
   webpack: (config, { isServer }) => {
